@@ -6,9 +6,9 @@ paymentsRouter.post('/payments', async (req, res) => {
   try {
     const client = await pagarme.client.connect({ api_key: process.env.PAGARME_API_KEY });
 
-    const transactions = await client.capture({ id: '1627822' });
+    // const transactions = await client.capture({ id: '1627822' });
   
-    return res.json(transactions);
+    return res.json(client);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
