@@ -1,0 +1,20 @@
+{
+  "name": "pagarme-integration",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/ribeirogab/pagarme-integration.git",
+  "author": "ribeirogab <gblosr@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "pagarme": "^4.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
