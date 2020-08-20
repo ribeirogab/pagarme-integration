@@ -16,7 +16,9 @@ class PaymentsController extends Controller {
       const { planName } = req.params;
       const { token } = req.body;
 
-      const selectedPlan = await Plans.findOne({ name: planName }).exec();
+      console.log(planName);
+
+      const selectedPlan = await Plans.findOne({ name: planName });
 
       if (!selectedPlan) throw Error('Plan does not exist!');
 
@@ -24,16 +26,8 @@ class PaymentsController extends Controller {
         api_key: process.env.PAGARME_API_KEY
       });
 
-      console.log('\n');
-      console.log(client);
-      console.log('\n');
-      console.log(token);
-      console.log('\n');
-      console.log(selectedPlan.price);
-      console.log('\n');
-
       const transaction = await client.transactions.capture({
-        id: token, amount: selectedPlan.price
+        id: token, amount: selectedPlan.price_in_cents
       });
        
       return res.json(transaction);

@@ -39,7 +39,7 @@ class PlansController extends Controller {
   async show(req, res, next) {
     try {
       const { planId } = req.params
-      const plan = await Plans.findOne({ name: planId });
+      const plan = await Plans.findById(planId);
   
       return res.json(plan)
     } catch (error) {
