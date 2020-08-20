@@ -1,6 +1,7 @@
-const { HttpError } = require('../utils/errors')
-const Controller = require('./controller')
-const { Plans } = require('../models/plans.model')
+const pagarme = require('pagarme');
+
+const { HttpError } = require('../utils/errors');
+const Controller = require('./controller');
 
 class PlansController extends Controller {
   routes() {
@@ -13,16 +14,24 @@ class PlansController extends Controller {
       .route('/plans/:planId')
       .get(this.show)
       .put(this.update)
-      .delete(this.destroy);
   }
 
   async store(req, res, next) {
     try {
-      const { title, name, price_in_cents, expires_in_days } = req.body;
+      const { title, price_in_cents, expires_in_days, payment_methods } = req.body;
 
-      const plan = await Plans.create({ 
-        title, name, price_in_cents, expires_in_days
-      });
+      const client = await pagarme.client.connect({ api_key: process.env.PAGARME_API_KEY });
+
+      if (!client) throw Error('Invalid API KEY');
+
+      const plan = await client.plans.create({
+        amount: price_in_cents,
+        days: expires_in_days,
+        name: title,
+        payment_methods,
+      })
+
+      if (!plan) throw Error('Error creating pagarme plan');
 
       return res.json(plan);      
     } catch (error) {
@@ -31,17 +40,26 @@ class PlansController extends Controller {
   }
 
   async list(req, res, next) {
-    const plans = await Plans.find();
+    try {
+      const client = await pagarme.client.connect({ api_key: process.env.PAGARME_API_KEY });
 
-    return res.json(plans);
+      const plans = await client.plans.all();
+
+      return res.json(plans);
+    } catch (error) {
+      return next(new HttpError(error.message))
+    }
   }
 
   async show(req, res, next) {
     try {
-      const { planId } = req.params
-      const plan = await Plans.findById(planId);
+      const { planId } = req.params;
+
+      const client = await pagarme.client.connect({ api_key: process.env.PAGARME_API_KEY });
+
+      const plan = await client.plans.find({ id: planId });
   
-      return res.json(plan)
+      return res.json(plan);
     } catch (error) {
       return next(new HttpError(error.message))
     }
@@ -52,22 +70,14 @@ class PlansController extends Controller {
       const updatedFields = req.body
       const { planId } = req.params;
 
-      await Plans.findByIdAndUpdate(planId, { ...updatedFields })
-  
-      const plan = await Plans.findById(planId)
-  
-      return res.json(plan);
-    } catch (error) {
-      return next(new HttpError(error.message))
-    }
-  }
+      const client = await pagarme.client.connect({ api_key: process.env.PAGARME_API_KEY });
 
-  async destroy(req, res, next) {
-    try {
-      const { planId } = req.params;
-      await Plans.findByIdAndDelete(planId);
+      const updatedPlan = await client.plans.update({
+        id: planId,
+        ...updatedFields
+	    });
   
-      return res.status(200).json({});
+      return res.json(updatedPlan);
     } catch (error) {
       return next(new HttpError(error.message))
     }
