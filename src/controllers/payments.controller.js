@@ -24,6 +24,14 @@ class PaymentsController extends Controller {
         api_key: process.env.PAGARME_API_KEY
       });
 
+      console.log('\n');
+      console.log(client);
+      console.log('\n');
+      console.log(token);
+      console.log('\n');
+      console.log(selectedPlan.price);
+      console.log('\n');
+
       const transaction = await client.transactions.capture({
         id: token, amount: selectedPlan.price
       });
