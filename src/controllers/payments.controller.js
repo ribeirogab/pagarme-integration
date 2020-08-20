@@ -16,8 +16,6 @@ class PaymentsController extends Controller {
       const { planName } = req.params;
       const { token } = req.body;
 
-      console.log(planName);
-
       const selectedPlan = await Plans.findOne({ name: planName });
 
       if (!selectedPlan) throw Error('Plan does not exist!');
