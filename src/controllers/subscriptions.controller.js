@@ -30,14 +30,14 @@ class PaymentsController extends Controller {
       let paymentWithCreditCard = {};
 
       if (transaction.payment_method === 'credit_card') {
-        const client_encrypt = pagarme.client.connect({ encryption_key: process.env.PAGARME_ENCRYPTION_KEY });
-
-        const card_hash = client_encrypt.security.encrypt({
-          // card_number: transaction.card.holder_name,
-          card_holder_name: transaction.card.holder_name,
-          card_expiration_date: transaction.card.expiration_date,
-          // card_cvv: transaction.card.holder_name,
-        });
+        paymentWithCreditCard.card_hash = transaction.card.id;
+        paymentWithCreditCard.card_number = Number(
+          `${transaction.card.first_digits}${transaction.card.last_digits}`
+          );
+        paymentWithCreditCard.card_cvv = 783;
+        paymentWithCreditCard.card_holder_name = transaction.card.holder_name;
+        paymentWithCreditCard.expiration_date = transaction.card.expiration_date;
+        paymentWithCreditCard.card_id = transaction.card.id;
       }
 
       const subscription = await client.subscriptions.create({
@@ -45,8 +45,16 @@ class PaymentsController extends Controller {
         payment_method: transaction.payment_method,
         ...paymentWithCreditCard,
         customer: {
-          email: 'someone@somewhere.com',
-          document_number: '30621143049'
+          name: transaction.customer.name,
+          email: transaction.customer.email,
+          document_number: transaction.customer.document_number,
+          address: {
+            street: transaction.billing.address.street,
+            street_number: transaction.billing.address.street_number,
+            complementary: transaction.billing.address.complementary,
+            neighborhood: transaction.billing.address.neighborhood,
+            zipcode: transaction.billing.address.zipcode,
+          },
         }
       });
        
